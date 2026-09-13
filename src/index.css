@@ -1,0 +1,244 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  line-height: 1.05;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 4.5vw, 3.2rem);
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.slide p {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  max-width: 700px;
+}
+
+.slide-viewport {
+  height: 100vh;
+  height: 100dvh; /* mobile-accurate viewport height, overrides the line above on supporting browsers */
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.slide-track {
+  display: flex;
+  flex-direction: column;
+}
+
+.slide {
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 3rem 1.5rem 2rem;
+  overflow: hidden; /* safety net: never let slide content bleed into the next slide */
+}
+
+/* Short slides (Title/Footer) have no media to fill — keep their heading+text
+   vertically centered within their reduced 70dvh height instead of stretched apart. */
+.slide-short {
+  justify-content: center;
+}
+
+/* Header/Footer: 70dvh instead of full-screen, so the adjacent slide peeks through
+   the remaining 30dvh (see the offsets logic in HomePage.jsx for how this stays snap-accurate). */
+.slide-short {
+  height: 70vh;
+  height: 70dvh;
+  flex-shrink: 0;
+}
+
+.slide-title { background: #0d0d17; color: white; }
+.slide-home { background: #1a1a2e; color: white; }
+.slide-product-transformation { background: #16213e; color: white; }
+.slide-lifestyle-concepts { background: #0f3460; color: white; }
+.slide-seasonal-campaigns { background: #1b4965; color: white; }
+.slide-featured { background: #6b2d5c; color: white; }
+.slide-extra { background: #533483; color: white; }
+.slide-footer { background: #0d0d17; color: white; }
+
+.category-buttons button {
+  margin: 0 0.5rem;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+}
+
+.featured-image-placeholder {
+  width: 100%;
+  max-width: 1300px;
+  flex: 1;
+  min-height: 0;
+  background: rgba(255,255,255,0.15);
+  border: 2px dashed rgba(255,255,255,0.4);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1300px;
+  /* Reserve room on the right for the fixed dot-nav so items don't sit underneath it */
+  padding-right: 3rem;
+  /* Fills the space between heading and paragraph (see .slide:has(.gallery-grid) above)
+     instead of being capped to a small centered box; still bounded so a 3rd row pushes to
+     a following slide rather than shrinking everything to fit. */
+  flex: 1;
+  min-height: 0;
+}
+
+.gallery-item-placeholder {
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.15);
+  border: 2px dashed rgba(255,255,255,0.4);
+}
+
+/* Phones: fewer columns, and drop the right padding reserved for the dot-nav
+   since the dots shrink and hug the edge on small screens anyway */
+@media (max-width: 480px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding-right: 0;
+    max-width: 100%;
+  }
+}
+
+/* Tablets */
+@media (min-width: 481px) and (max-width: 900px) {
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr);
+    padding-right: 2rem;
+  }
+}
+
+/* NOTE: In HomePage.jsx, change the animate prop to use dvh, matching the .slide height unit:
+   animate={{ y: `-${index * 100}dvh` }}
+   This keeps the JS-driven translation in sync with the actual mobile-safe slide height. */
+
+/* Invisible strip along the right edge — hovering it (desktop) or touching it (mobile,
+   handled in HomePage.jsx's EDGE_ZONE_PX logic) reveals the dot nav. Wider than the
+   dots themselves so it's an easy target, not just the ~12px dot column. */
+.nav-hover-zone {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 56px;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 9; /* just under .dot-nav so dots remain clickable above it */
+}
+
+/* On touch devices, give a faint always-visible cue along the edge so the
+   scrub gesture is discoverable without hovering (which touch can't do). */
+@media (hover: none) {
+  .nav-hover-zone::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 3px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Dot navigation */
+.dot-nav {
+  position: fixed;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  z-index: 10;
+  transition: opacity 0.4s ease;
+}
+
+.dot-nav-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dot-nav-hidden {
+  opacity: 0;
+  pointer-events: none; /* so faded-out dots don't block taps/swipes underneath */
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+
+.dot:hover {
+  border-color: rgba(255,255,255,0.9);
+}
+
+.dot-active {
+  background: white;
+  border-color: white;
+  transform: scale(1.3);
+}
+
+/* Smaller, closer-to-edge dots on phones so they don't crowd placeholder content */
+@media (max-width: 480px) {
+  .dot-nav {
+    right: 0.9rem;
+    gap: 0.6rem;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-width: 1.5px;
+  }
+
+  .dot-active {
+    transform: scale(1.4);
+  }
+}
+
+/* Phones: smaller, tighter dot nav so it doesn't overlap centered slide content */
+@media (max-width: 480px) {
+  .dot-nav {
+    right: 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-width: 1.5px;
+  }
+
+  .dot-active {
+    transform: scale(1.4);
+  }
+}
