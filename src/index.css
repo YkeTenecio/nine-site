@@ -210,25 +210,15 @@ h2 {
   transform: scale(1.3);
 }
 
-/* Smaller, closer-to-edge dots on phones so they don't crowd placeholder content */
-@media (max-width: 480px) {
-  .dot-nav {
-    right: 0.9rem;
-    gap: 0.6rem;
-  }
-
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-width: 1.5px;
-  }
-
-  .dot-active {
-    transform: scale(1.4);
-  }
+/* Extra pop on the active dot specifically while scrub-dragging, so it's obvious
+   which slide you'd land on if you let go right now. */
+.dot-scrub-active {
+  transform: scale(2);
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.6);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Phones: smaller, tighter dot nav so it doesn't overlap centered slide content */
+/* Smaller, closer-to-edge dots on phones so they don't overlap centered slide content */
 @media (max-width: 480px) {
   .dot-nav {
     right: 0.75rem;
@@ -243,5 +233,9 @@ h2 {
 
   .dot-active {
     transform: scale(1.4);
+  }
+
+  .dot-scrub-active {
+    transform: scale(2.2);
   }
 }

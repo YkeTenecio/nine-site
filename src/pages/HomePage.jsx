@@ -183,13 +183,24 @@ function HomePage() {
   const [index, setIndex] = useState(0);
   const offsets = useMemo(() => computeOffsets(slides), []);
   const [navVisible, setNavVisible] = useState(true);
-  const [isScrubbing, setIsScrubbing] = useState(false);
+  const [isScrubbing, setIsScrubbingState] = useState(false);
+  const indexRef = useRef(0); // mirrors `index` for use inside stable event handlers (avoids re-subscribing listeners on every slide change)
+  const isScrubbingRef = useRef(false);
   const isAnimating = useRef(false);
   const touchStartY = useRef(0);
   const scrubStartY = useRef(0);
   const scrubStartIndex = useRef(0);
   const touchOnNav = useRef(false); // true when the current touch sequence started on the dot-nav itself
   const navHideTimer = useRef(null);
+
+  useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
+
+  const setIsScrubbing = (value) => {
+    isScrubbingRef.current = value;
+    setIsScrubbingState(value);
+  };
 
   const wakeNav = () => {
     setNavVisible(true);
@@ -225,22 +236,25 @@ function HomePage() {
     }, TRANSITION_MS);
   };
 
+  // Mounted once — every handler below reads index/isScrubbing via refs instead of
+  // closure state, so the listeners never get torn down and re-attached mid-gesture
+  // (which was happening every single index change while scrubbing).
   useEffect(() => {
     const handleWheel = (e) => {
       e.preventDefault();
       wakeNav();
-      if (e.deltaY > 0) goTo(index + 1);
-      else if (e.deltaY < 0) goTo(index - 1);
+      if (e.deltaY > 0) goTo(indexRef.current + 1);
+      else if (e.deltaY < 0) goTo(indexRef.current - 1);
     };
 
     const handleKeyDown = (e) => {
       if (e.key === 'ArrowDown' || e.key === 'PageDown') {
         wakeNav();
-        goTo(index + 1);
+        goTo(indexRef.current + 1);
       }
       if (e.key === 'ArrowUp' || e.key === 'PageUp') {
         wakeNav();
-        goTo(index - 1);
+        goTo(indexRef.current - 1);
       }
     };
 
@@ -263,7 +277,7 @@ function HomePage() {
         // scrubber instead of the normal swipe-to-navigate.
         setIsScrubbing(true);
         scrubStartY.current = touch.clientY;
-        scrubStartIndex.current = index;
+        scrubStartIndex.current = indexRef.current;
         holdNavOpen();
       } else {
         wakeNav();
@@ -278,12 +292,14 @@ function HomePage() {
       // gesture should ever be allowed to take over mid-swipe.
       e.preventDefault();
 
-      if (!isScrubbing) return;
+      if (!isScrubbingRef.current) return;
       const touch = e.touches[0];
-      const delta = scrubStartY.current - touch.clientY; // positive = dragged up = move forward
+      // Scrollbar-style mapping: finger up -> earlier slide (lower index, "up" in the dot list),
+      // finger down -> later slide (higher index, "down" in the dot list).
+      const delta = scrubStartY.current - touch.clientY; // positive when finger has moved up
       const slideDelta = Math.round(delta / PX_PER_SLIDE_SCRUB);
-      const target = Math.max(0, Math.min(slides.length - 1, scrubStartIndex.current + slideDelta));
-      if (target !== index) setIndex(target);
+      const target = Math.max(0, Math.min(slides.length - 1, scrubStartIndex.current - slideDelta));
+      if (target !== indexRef.current) setIndex(target);
     };
 
     const handleTouchEnd = (e) => {
@@ -292,7 +308,7 @@ function HomePage() {
         return;
       }
 
-      if (isScrubbing) {
+      if (isScrubbingRef.current) {
         setIsScrubbing(false);
         scheduleNavHide();
         return;
@@ -300,8 +316,8 @@ function HomePage() {
 
       const delta = touchStartY.current - e.changedTouches[0].clientY;
       if (Math.abs(delta) < 40) return;
-      if (delta > 0) goTo(index + 1);
-      else goTo(index - 1);
+      if (delta > 0) goTo(indexRef.current + 1);
+      else goTo(indexRef.current - 1);
     };
 
     window.addEventListener('wheel', handleWheel, { passive: false });
@@ -317,7 +333,7 @@ function HomePage() {
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [index, isScrubbing]);
+  }, []);
 
   useEffect(() => {
     wakeNav();
@@ -364,11 +380,10 @@ function HomePage() {
         visible={navVisible}
         onMouseEnter={holdNavOpen}
         onMouseLeave={scheduleNavHide}
+        scrubbing={isScrubbing}
       />
     </div>
   );
 }
-
-
 
 export default HomePage;
