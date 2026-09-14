@@ -197,7 +197,19 @@ h2 {
   background: transparent;
   cursor: pointer;
   padding: 0;
-  transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+  transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Outer two dots on each end of the 7-dot window: smaller and slightly blurred,
+   so attention stays on the prev/current/next trio in the middle. */
+.dot-edge {
+  transform: scale(0.6);
+  filter: blur(0.6px);
+  opacity: 0.45;
+}
+
+.dot-edge:hover {
+  opacity: 0.75;
 }
 
 .dot:hover {
