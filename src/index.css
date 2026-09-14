@@ -171,12 +171,25 @@ h2 {
   right: 2rem;
   top: 50%;
   transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
   z-index: 10;
   touch-action: manipulation; /* restores normal tap handling here despite .slide-viewport's touch-action: none */
   transition: opacity 0.4s ease;
+}
+
+/* Fixed-height clipping window — sized to fit exactly 7 dots + their gaps.
+   Everything in .dot-track outside this height is simply not visible,
+   which is what limits the filmstrip to "showing 7" while still being
+   one continuous scrollable column underneath. */
+.dot-nav-viewport {
+  position: relative;
+  overflow: hidden;
+  height: 172px; /* 7 dots (12px) + 6 gaps (0.9rem = 14.4px): (7*12)+(6*14.4) — animated to full height on hover via Framer Motion in DotNav.jsx */
+}
+
+.dot-track {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
 }
 
 .dot-nav-visible {
@@ -190,64 +203,97 @@ h2 {
 }
 
 .dot {
+  position: relative;
   width: 12px;
   height: 12px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.5);
+  min-width: 12px;
+  min-height: 12px;
+  max-width: 12px;
+  max-height: 12px;
+  box-sizing: border-box;
+  border-radius: 50%; /* enforced here only, never touched by animation — shape can't distort mid-transition */
+  overflow: hidden; /* clips both sphere layers to a perfect circle regardless of their own gradients/shadows */
+  border: none;
   background: transparent;
   cursor: pointer;
   padding: 0;
-  transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 0;
+  font-size: 0;
+  /* Reset native <button> chrome — without this, browsers (especially mobile Safari) can
+     impose their own min-height/appearance on the element, which is what was stretching
+     the shiny sphere into an oval/pill instead of a perfect circle. */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  outline: none;
+  /* scale/opacity/filter are animated via Framer Motion in DotNav.jsx; shape itself never is */
 }
 
-/* Outer two dots on each end of the 7-dot window: smaller and slightly blurred,
-   so attention stays on the prev/current/next trio in the middle. */
-.dot-edge {
-  transform: scale(0.6);
-  filter: blur(0.6px);
-  opacity: 0.45;
+.dot::-moz-focus-inner {
+  border: 0;
+  padding: 0;
 }
 
-.dot-edge:hover {
-  opacity: 0.75;
+.dot-hollow,
+.dot-shiny {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
 }
 
-.dot:hover {
-  border-color: rgba(255,255,255,0.9);
+/* Hollow sphere (inactive dots): a thin glassy ring with a faint inner sheen,
+   like an empty glass bead rather than a flat circle outline. */
+.dot-hollow {
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.04) 55%, transparent 75%);
+  box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.25);
+  transition: border-color 0.2s ease;
 }
 
-.dot-active {
-  background: white;
-  border-color: white;
-  transform: scale(1.3);
+/* Shiny sphere (active dot): a glossy, lit ball — bright specular highlight top-left,
+   darkening toward the edges for a 3D pearl/chrome feel. Opacity-crossfades in over
+   the hollow layer rather than replacing it, so no color-interpolation artifacts. */
+.dot-shiny {
+  background: radial-gradient(circle at 32% 28%, #ffffff 0%, #f3f4f6 30%, #d6d9df 62%, #9aa0ab 100%);
+  box-shadow:
+    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.35),
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.9);
 }
 
-/* Extra pop on the active dot specifically while scrub-dragging, so it's obvious
-   which slide you'd land on if you let go right now. */
+.dot:hover .dot-hollow {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Extra glow on the active dot specifically while scrub-dragging, so it's obvious
+   which slide you'd land on if you let go right now. Scale itself is handled by
+   Framer Motion in DotNav.jsx; this just adds the glow on top. */
 .dot-scrub-active {
-  transform: scale(2);
   box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.6);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease;
 }
 
 /* Smaller, closer-to-edge dots on phones so they don't overlap centered slide content */
 @media (max-width: 480px) {
   .dot-nav {
     right: 0.75rem;
+  }
+
+  .dot-track {
     gap: 0.6rem;
+  }
+
+  .dot-nav-viewport {
+    height: 116px; /* 7 dots (8px) + 6 gaps (0.6rem = 9.6px): (7*8)+(6*9.6) */
   }
 
   .dot {
     width: 8px;
     height: 8px;
-    border-width: 1.5px;
-  }
-
-  .dot-active {
-    transform: scale(1.4);
-  }
-
-  .dot-scrub-active {
-    transform: scale(2.2);
+    min-width: 8px;
+    min-height: 8px;
+    max-width: 8px;
+    max-height: 8px;
   }
 }

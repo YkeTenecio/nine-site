@@ -381,6 +381,7 @@ function HomePage() {
         onMouseEnter={holdNavOpen}
         onMouseLeave={scheduleNavHide}
         scrubbing={isScrubbing}
+        transitionDuration={(isScrubbing ? SCRUB_TRANSITION_MS : TRANSITION_MS) / 1000}
       />
     </div>
   );
