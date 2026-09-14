@@ -164,6 +164,7 @@ const TRANSITION_MS = 700;
 const NAV_HIDE_DELAY_MS = 1500;
 const EDGE_ZONE_PX = 48; // width from the right edge that starts a scrub gesture instead of a normal swipe
 const SCRUB_TRANSITION_MS = 120; // snappier follow-the-finger duration while scrubbing
+const PX_PER_SLIDE_SCRUB = 45; // how many px of drag = one slide change while scrubbing (lower = more sensitive)
 
 // Builds the vertical offset (in dvh) the track must translate to for each slide index,
 // accounting for short slides and the footer's backward overlap.
@@ -185,6 +186,9 @@ function HomePage() {
   const [isScrubbing, setIsScrubbing] = useState(false);
   const isAnimating = useRef(false);
   const touchStartY = useRef(0);
+  const scrubStartY = useRef(0);
+  const scrubStartIndex = useRef(0);
+  const touchOnNav = useRef(false); // true when the current touch sequence started on the dot-nav itself
   const navHideTimer = useRef(null);
 
   const wakeNav = () => {
@@ -244,9 +248,22 @@ function HomePage() {
       const touch = e.touches[0];
       touchStartY.current = touch.clientY;
 
+      // If the touch started on the dot-nav (or anything inside it), let DotNav's own
+      // handlers (click, stopPropagation) own this touch entirely — don't treat it as a
+      // page gesture at all. This is what was swallowing dot taps before: the dots sit
+      // inside the edge-scrub zone, so a tap was being hijacked as a scrub.
+      if (e.target.closest && e.target.closest('.dot-nav')) {
+        touchOnNav.current = true;
+        return;
+      }
+      touchOnNav.current = false;
+
       if (touch.clientX >= window.innerWidth - EDGE_ZONE_PX) {
-        // Started near the right edge — grab the scrubber instead of the normal swipe-to-navigate.
+        // Started near the right edge (but not on the dots themselves) — grab the
+        // scrubber instead of the normal swipe-to-navigate.
         setIsScrubbing(true);
+        scrubStartY.current = touch.clientY;
+        scrubStartIndex.current = index;
         holdNavOpen();
       } else {
         wakeNav();
@@ -254,21 +271,33 @@ function HomePage() {
     };
 
     const handleTouchMove = (e) => {
+      if (touchOnNav.current) return;
+
+      // Block the browser's own pull-to-refresh / rubber-band scroll for every touch
+      // on the page — we're handling all navigation ourselves, so no native scroll
+      // gesture should ever be allowed to take over mid-swipe.
+      e.preventDefault();
+
       if (!isScrubbing) return;
-      e.preventDefault(); // block page scroll/bounce while dragging the scrubber
       const touch = e.touches[0];
-      const proportion = touch.clientY / window.innerHeight;
-      const target = Math.round(proportion * (slides.length - 1));
-      const clamped = Math.max(0, Math.min(slides.length - 1, target));
-      if (clamped !== index) setIndex(clamped);
+      const delta = scrubStartY.current - touch.clientY; // positive = dragged up = move forward
+      const slideDelta = Math.round(delta / PX_PER_SLIDE_SCRUB);
+      const target = Math.max(0, Math.min(slides.length - 1, scrubStartIndex.current + slideDelta));
+      if (target !== index) setIndex(target);
     };
 
     const handleTouchEnd = (e) => {
+      if (touchOnNav.current) {
+        touchOnNav.current = false;
+        return;
+      }
+
       if (isScrubbing) {
         setIsScrubbing(false);
         scheduleNavHide();
         return;
       }
+
       const delta = touchStartY.current - e.changedTouches[0].clientY;
       if (Math.abs(delta) < 40) return;
       if (delta > 0) goTo(index + 1);
@@ -339,5 +368,7 @@ function HomePage() {
     </div>
   );
 }
+
+
 
 export default HomePage;

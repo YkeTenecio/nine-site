@@ -6,6 +6,7 @@
 
 html, body, #root {
   height: 100%;
+  overscroll-behavior-y: none; /* extra guard against pull-to-refresh, alongside the JS preventDefault */
 }
 
 h1 {
@@ -31,6 +32,7 @@ h2 {
   width: 100%;
   overflow: hidden;
   position: relative;
+  touch-action: none; /* we handle all touch gestures ourselves; stops the browser's own scroll/refresh handling */
 }
 
 .slide-track {
@@ -173,6 +175,7 @@ h2 {
   flex-direction: column;
   gap: 0.9rem;
   z-index: 10;
+  touch-action: manipulation; /* restores normal tap handling here despite .slide-viewport's touch-action: none */
   transition: opacity 0.4s ease;
 }
 
