@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import Slide from '../components/Slide.jsx';
 import DotNav from '../components/DotNav.jsx';
+import NavHint from '../components/NavHint.jsx';
 
 // Each slide: key (unique), className (controls bg color), and content.
 // `short: true` makes a slide 70dvh instead of the full 100dvh, letting the adjacent
@@ -28,7 +29,7 @@ const slides = [
     content: (
       <>
         <h2>Selected Work</h2>
-        <div className="featured-image-placeholder" />
+        <div className="featured-image-placeholder skeleton" />
         <p>Supporting text placeholder.</p>
       </>
     ),
@@ -39,7 +40,7 @@ const slides = [
     content: (
       <>
         <h2>01 — Product Transformation</h2>
-        <div className="featured-image-placeholder" />
+        <div className="featured-image-placeholder skeleton" />
         <p>Supporting text placeholder.</p>
       </>
     ),
@@ -51,10 +52,10 @@ const slides = [
       <>
         <h2>01 — Product Transformation (cont.)</h2>
         <div className="gallery-grid">
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
         </div>
         <p>Supporting text placeholder.</p>
       </>
@@ -67,10 +68,10 @@ const slides = [
       <>
         <h2>02 — Lifestyle Product Concepts</h2>
         <div className="gallery-grid">
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
         </div>
         <p>Supporting text placeholder.</p>
       </>
@@ -83,10 +84,10 @@ const slides = [
       <>
         <h2>02 — Lifestyle Product Concepts (cont.)</h2>
         <div className="gallery-grid">
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
         </div>
         <p>Supporting text placeholder.</p>
       </>
@@ -99,10 +100,10 @@ const slides = [
       <>
         <h2>Concept: Seasonal Campaigns — Holiday Collection</h2>
         <div className="gallery-grid">
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
         </div>
         <p>Supporting text placeholder.</p>
       </>
@@ -115,10 +116,10 @@ const slides = [
       <>
         <h2>Concept: Seasonal Campaigns — Holiday Collection (cont.)</h2>
         <div className="gallery-grid">
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
-          <div className="gallery-item-placeholder" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
+          <div className="gallery-item-placeholder skeleton" />
         </div>
         <p>Supporting text placeholder.</p>
       </>
@@ -130,7 +131,7 @@ const slides = [
     content: (
       <>
         <h2>Gift Box Transformation</h2>
-        <div className="featured-image-placeholder" />
+        <div className="featured-image-placeholder skeleton" />
         <p>Supporting text placeholder.</p>
       </>
     ),
@@ -141,7 +142,7 @@ const slides = [
     content: (
       <>
         <h2>Workflow</h2>
-        <div className="featured-image-placeholder" />
+        <div className="featured-image-placeholder skeleton" />
         <p>Supporting text placeholder.</p>
       </>
     ),
@@ -165,6 +166,8 @@ const NAV_HIDE_DELAY_MS = 1500;
 const EDGE_ZONE_PX = 48; // width from the right edge that starts a scrub gesture instead of a normal swipe
 const SCRUB_TRANSITION_MS = 120; // snappier follow-the-finger duration while scrubbing
 const PX_PER_SLIDE_SCRUB = 45; // how many px of drag = one slide change while scrubbing (lower = more sensitive)
+const NAV_HINT_STORAGE_KEY = 'portfolio_nav_hint_seen';
+const NAV_HINT_DELAY_MS = 1200; // wait a beat after load before showing the hint, so it doesn't feel like a jump-scare
 
 // Builds the vertical offset (in dvh) the track must translate to for each slide index,
 // accounting for short slides and the footer's backward overlap.
@@ -180,6 +183,7 @@ function computeOffsets(slideList) {
 }
 
 function HomePage() {
+  const prefersReducedMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
   const offsets = useMemo(() => computeOffsets(slides), []);
   const [navVisible, setNavVisible] = useState(true);
@@ -192,6 +196,7 @@ function HomePage() {
   const scrubStartIndex = useRef(0);
   const touchOnNav = useRef(false); // true when the current touch sequence started on the dot-nav itself
   const navHideTimer = useRef(null);
+  const [showHint, setShowHint] = useState(false);
 
   useEffect(() => {
     indexRef.current = index;
@@ -231,9 +236,10 @@ function HomePage() {
     if (nextIndex < 0 || nextIndex >= slides.length) return;
     isAnimating.current = true;
     setIndex(nextIndex);
+    const lockDuration = prefersReducedMotion ? 50 : TRANSITION_MS;
     setTimeout(() => {
       isAnimating.current = false;
-    }, TRANSITION_MS);
+    }, lockDuration);
   };
 
   // Mounted once — every handler below reads index/isScrubbing via refs instead of
@@ -255,6 +261,14 @@ function HomePage() {
       if (e.key === 'ArrowUp' || e.key === 'PageUp') {
         wakeNav();
         goTo(indexRef.current - 1);
+      }
+      if (e.key === 'Home') {
+        wakeNav();
+        goTo(0);
+      }
+      if (e.key === 'End') {
+        wakeNav();
+        goTo(slides.length - 1);
       }
     };
 
@@ -342,6 +356,29 @@ function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    let hasSeen = false;
+    try {
+      hasSeen = window.localStorage.getItem(NAV_HINT_STORAGE_KEY) === 'true';
+    } catch {
+      // localStorage can throw in some privacy modes — just skip the hint rather than crash.
+      hasSeen = true;
+    }
+    if (hasSeen) return;
+
+    const timer = setTimeout(() => setShowHint(true), NAV_HINT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const dismissHint = () => {
+    setShowHint(false);
+    try {
+      window.localStorage.setItem(NAV_HINT_STORAGE_KEY, 'true');
+    } catch {
+      // Ignore — worst case the hint reappears next visit, not a big deal.
+    }
+  };
+
   const handleDotClick = (i) => {
     wakeNav();
     goTo(i);
@@ -353,7 +390,7 @@ function HomePage() {
         className="slide-track"
         animate={{ y: `-${offsets[index]}dvh` }}
         transition={{
-          duration: (isScrubbing ? SCRUB_TRANSITION_MS : TRANSITION_MS) / 1000,
+          duration: prefersReducedMotion ? 0.05 : (isScrubbing ? SCRUB_TRANSITION_MS : TRANSITION_MS) / 1000,
           ease: [0.65, 0, 0.35, 1],
         }}
       >
@@ -381,8 +418,13 @@ function HomePage() {
         onMouseEnter={holdNavOpen}
         onMouseLeave={scheduleNavHide}
         scrubbing={isScrubbing}
-        transitionDuration={(isScrubbing ? SCRUB_TRANSITION_MS : TRANSITION_MS) / 1000}
+        transitionDuration={prefersReducedMotion ? 0.05 : (isScrubbing ? SCRUB_TRANSITION_MS : TRANSITION_MS) / 1000}
+        reducedMotion={prefersReducedMotion}
       />
+
+      <AnimatePresence>
+        {showHint && <NavHint onDismiss={dismissHint} reducedMotion={prefersReducedMotion} />}
+      </AnimatePresence>
     </div>
   );
 }

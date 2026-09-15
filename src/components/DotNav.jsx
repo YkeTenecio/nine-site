@@ -14,6 +14,7 @@ function DotNav({
   onMouseLeave,
   scrubbing = false,
   transitionDuration = 0.7,
+  reducedMotion = false,
 }) {
   const viewportRef = useRef(null);
   const trackRef = useRef(null);
@@ -30,9 +31,12 @@ function DotNav({
   const maskImage = useMotionTemplate`linear-gradient(to bottom, transparent 0%, black calc(12% * ${fadeStrength}), black calc(100% - 12% * ${fadeStrength}), transparent 100%)`;
 
   useEffect(() => {
-    const controls = animate(fadeStrength, isHovering ? 0 : 1, { duration: 0.3, ease: 'easeOut' });
+    const controls = animate(fadeStrength, isHovering ? 0 : 1, {
+      duration: reducedMotion ? 0.01 : 0.3,
+      ease: 'easeOut',
+    });
     return () => controls.stop();
-  }, [isHovering, fadeStrength]);
+  }, [isHovering, fadeStrength, reducedMotion]);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -80,7 +84,7 @@ function DotNav({
         className="dot-nav-viewport"
         ref={viewportRef}
         animate={{ height: isHovering ? expandedHeight || collapsedHeight : collapsedHeight }}
-        transition={{ duration: 0.35, ease: [0.65, 0, 0.35, 1] }}
+        transition={{ duration: reducedMotion ? 0.01 : 0.35, ease: [0.65, 0, 0.35, 1] }}
         style={{ WebkitMaskImage: maskImage, maskImage }}
       >
         <motion.div
@@ -108,7 +112,11 @@ function DotNav({
                   opacity: isEdge ? 0.45 : 1,
                   filter: isEdge ? 'blur(0.6px)' : 'blur(0px)',
                 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                transition={
+                  reducedMotion
+                    ? { duration: 0.01 }
+                    : { type: 'spring', stiffness: 320, damping: 26 }
+                }
                 className={`dot ${isActive && scrubbing ? 'dot-scrub-active' : ''}`}
                 onClick={() => onDotClick(slideIndex)}
                 aria-label={`Go to slide ${slideIndex + 1}`}
@@ -123,7 +131,7 @@ function DotNav({
                 <motion.span
                   className="dot-shiny"
                   animate={{ opacity: isActive ? 1 : 0 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  transition={{ duration: reducedMotion ? 0.01 : 0.3, ease: 'easeOut' }}
                 />
               </motion.button>
             );
