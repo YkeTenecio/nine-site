@@ -47,7 +47,7 @@ const slides = [
   },
   {
     key: 'selected-work',
-    bg: 1,
+    bg: 2,
     headingColor: 1,
     bodyColor: 1,
     headingFont: 1,
@@ -69,7 +69,7 @@ const slides = [
   },
   {
     key: 'product-transformation-2',
-    bg: 2,
+    bg: 1,
     headingColor: 1,
     bodyColor: 1,
     headingFont: 1,
@@ -81,7 +81,7 @@ const slides = [
   },
   {
     key: 'lifestyle-concepts-1',
-    bg: 1,
+    bg: 2,
     headingColor: 1,
     bodyColor: 1,
     headingFont: 1,
