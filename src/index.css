@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Montserrat:wght@500;700;900&display=swap');
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -24,21 +26,113 @@ html, body, #root {
   overscroll-behavior-y: none; /* extra guard against pull-to-refresh, alongside the JS preventDefault */
 }
 
+/* Heading color palette. Each slide picks a slot via its `headingColor` field in
+   HomePage.jsx (e.g. `headingColor: 1` -> .heading-color-1). Add a new slot by adding
+   another --heading-color-N variable + matching rule below; no other changes needed. */
+:root {
+  --heading-color-1: #e12020;
+  --heading-color-2: #fce08b;
+}
+
+.heading-color-1 h1,
+.heading-color-1 h2 {
+  color: var(--heading-color-1);
+}
+
+.heading-color-2 h1,
+.heading-color-2 h2 {
+  color: var(--heading-color-2);
+}
+
+/* Body text color palette — same pattern, via the `bodyColor` field. */
+:root {
+  --body-color-1: #401804;
+  --body-color-2: black;
+}
+
+.body-color-1 p {
+  color: var(--body-color-1);
+}
+
+.body-color-2 p {
+  color: var(--body-color-2);
+}
+
+/* Google Fonts import for DM Sans (body text). Gotham (heading font) is a commercial
+   font NOT available via Google Fonts or any free CDN — it can't be loaded this way.
+   If you own a Gotham license, self-host the font files and add an @font-face block
+   here (example commented out below); until then, 'Gotham' in the stack below falls
+   back to Montserrat, a free, visually similar alternative, also loaded here. */
+
+/* Uncomment and point at your own hosted files if you have a licensed Gotham.
+   Headings are currently set to font-weight: 900 (see h1/h2 below), so you'd need
+   a Black/Ultra weight file for it to render as true 900 rather than synthetic bold:
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham-Book.woff2') format('woff2');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham-Bold.woff2') format('woff2');
+  font-weight: 700;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/Gotham-Black.woff2') format('woff2');
+  font-weight: 900;
+}
+*/
+
+/* Heading font palette — via the `headingFont` field. Applies only to h1/h2 (same
+   descendant-selector pattern as the heading COLOR palette above), independent of
+   whatever the body text's font is doing. */
+:root {
+  --heading-font-1: 'Gotham', 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  --heading-font-2: Georgia, 'Times New Roman', serif;
+}
+
+.heading-font-1 h1,
+.heading-font-1 h2 {
+  font-family: var(--heading-font-1);
+}
+
+.heading-font-2 h1,
+.heading-font-2 h2 {
+  font-family: var(--heading-font-2);
+}
+
+/* Body font palette — via the `bodyFont` field. Applies only to p, independent of
+   the heading font. */
+:root {
+  --body-font-1: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --body-font-2: Georgia, 'Times New Roman', serif;
+}
+
+.body-font-1 p {
+  font-family: var(--body-font-1);
+}
+
+.body-font-2 p {
+  font-family: var(--body-font-2);
+}
+
 h1 {
   font-size: clamp(2.5rem, 7vw, 5.5rem);
   line-height: 1.05;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 h2 {
   font-size: clamp(1.8rem, 4.5vw, 3.2rem);
   line-height: 1.1;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .slide p {
   font-size: clamp(1rem, 1.5vw, 1.25rem);
   max-width: 700px;
+  font-weight: 400;
 }
 
 .slide-viewport {
@@ -83,14 +177,16 @@ h2 {
   flex-shrink: 0;
 }
 
-.slide-title { background: #0d0d17; color: white; }
-.slide-home { background: #1a1a2e; color: white; }
-.slide-product-transformation { background: #16213e; color: white; }
-.slide-lifestyle-concepts { background: #0f3460; color: white; }
-.slide-seasonal-campaigns { background: #1b4965; color: white; }
-.slide-featured { background: #6b2d5c; color: white; }
-.slide-extra { background: #533483; color: white; }
-.slide-footer { background: #0d0d17; color: white; }
+/* Slide background palette. Each slide picks one of these by number via its `bg`
+   field in HomePage.jsx (e.g. `bg: 1` -> .slide-bg-1) — assignment is fully manual,
+   not computed, so slides can share a color, alternate, or follow any pattern you
+   want without touching any logic. To restyle the whole site, edit the colors below;
+   to add a new color option, add another `.slide-bg-N` rule and use that number on
+   whichever slide(s) you want it. Nothing else needs to change either way. */
+.slide-bg-1 { background: #fce08b; }
+.slide-bg-2 { background: #fdf6ef; }
+.slide-bg-3 { background: #e12020; } /* currently used only by the footer */
+.slide-bg-4 { background: #401804; } /* color test */
 
 .category-buttons button {
   margin: 0 0.5rem;
@@ -134,6 +230,155 @@ h2 {
   min-height: 0;
   background: rgba(255,255,255,0.15);
   border: 2px dashed rgba(255,255,255,0.4);
+}
+
+/* Side-by-side layout for FeaturedSlide's `layout: 'image-left' | 'image-right'`.
+   The heading is a separate full-width line ABOVE this row (see .featured-standalone-heading
+   below), not part of the row itself. Default JSX order is image-then-text (= "image-left");
+   `featured-row-reverse` (image-right) flips it via row-reverse. */
+.featured-row {
+  display: flex;
+  align-items: stretch;
+  gap: 3rem;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.featured-row-reverse {
+  flex-direction: row-reverse;
+}
+
+.featured-text-col {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.featured-image-col {
+  flex: 1;
+  min-height: 0;
+  max-width: none; /* overrides the 1300px cap from .featured-image-placeholder — here it only needs to fill its own column, not the whole slide width */
+  width: auto;
+}
+
+/* The heading in a row layout — full width so text-align actually has room to work with. */
+.featured-standalone-heading {
+  width: 100%;
+}
+
+/* Controls where a heading's own box sits horizontally, and its text alignment —
+   same pattern as .body-align-* below. For row-layout headings (already width:100%
+   via .featured-standalone-heading) align-self has no visible effect and text-align
+   does the work; for center-layout/Gallery/Footer/Title headings (which shrink-wrap
+   their own content width) align-self is what actually moves the box. */
+.heading-align-left {
+  align-self: flex-start;
+  text-align: left;
+}
+
+.heading-align-center {
+  align-self: center;
+  text-align: center;
+}
+
+.heading-align-right {
+  align-self: flex-end;
+  text-align: right;
+}
+
+/* Controls where a paragraph's own box sits horizontally within a slide that uses
+   plain vertical stacking (align-items: center on .slide) — e.g. FeaturedSlide's
+   'center' layout, GallerySlide, FooterSlide, TitleSlide. Without this, .slide's
+   align-items: center always centers the paragraph's box regardless of the text
+   alignment inside it, since the box itself is narrower than the slide (capped by
+   .slide p's max-width: 700px). align-self overrides that positioning per-element,
+   independent of every other child in the same slide. */
+.body-align-left {
+  align-self: flex-start;
+  text-align: left;
+}
+
+.body-align-center {
+  align-self: center;
+  text-align: center;
+}
+
+.body-align-right {
+  align-self: flex-end;
+  text-align: right;
+}
+
+/* 'stack-plus-pair' layout: left column is one image + text stacked, right column
+   is two (or more, via pairCount) images side by side. */
+.featured-split {
+  display: flex;
+  align-items: stretch;
+  gap: 3rem;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.featured-stack-col {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.featured-stack-image {
+  flex: 1;
+  min-height: 0;
+}
+
+.featured-pair-col {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  gap: 1rem;
+}
+
+.featured-pair-col > * {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Side-by-side doesn't work on narrow screens — stack instead, image on top. */
+@media (max-width: 768px) {
+  .featured-row {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .featured-row-reverse {
+    flex-direction: column;
+  }
+
+  .featured-image-col {
+    width: 100%;
+    height: auto;
+    flex: 1;
+  }
+
+  /* The left stack and right pair become top/bottom instead of side by side;
+     the pair itself stays a row (two smaller thumbnails still fit fine side by side). */
+  .featured-split {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .featured-pair-col {
+    flex: 1;
+  }
 }
 
 .gallery-grid {
@@ -330,27 +575,29 @@ h2 {
   border-radius: 50%;
 }
 
-/* Hollow sphere (inactive dots): a thin glassy ring with a faint inner sheen,
-   like an empty glass bead rather than a flat circle outline. */
+/* Hollow sphere (inactive dots): a thin dark glassy ring with a faint inner sheen —
+   dark rather than white/light, so it reads clearly against bright slide backgrounds
+   (this project's palette leans bright/light, unlike the original all-dark design). */
 .dot-hollow {
-  border: 1.5px solid rgba(255, 255, 255, 0.55);
-  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.04) 55%, transparent 75%);
-  box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.25);
+  border: 1.5px solid rgba(0, 0, 0, 0.55);
+  background: radial-gradient(circle at 35% 30%, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.04) 55%, transparent 75%);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.25);
   transition: border-color 0.2s ease;
 }
 
-/* Shiny sphere (active dot): a glossy, lit ball — bright specular highlight top-left,
-   darkening toward the edges for a 3D pearl/chrome feel. Opacity-crossfades in over
-   the hollow layer rather than replacing it, so no color-interpolation artifacts. */
+/* Shiny sphere (active dot): a dark, glossy ball — like polished onyx — bright
+   specular highlight top-left still gives it a 3D lit feel, but the base tone stays
+   dark for contrast against bright backgrounds. Opacity-crossfades in over the
+   hollow layer rather than replacing it, so no color-interpolation artifacts. */
 .dot-shiny {
-  background: radial-gradient(circle at 32% 28%, #ffffff 0%, #f3f4f6 30%, #d6d9df 62%, #9aa0ab 100%);
+  background: radial-gradient(circle at 32% 28%, #4a4a4a 0%, #2b2b2b 30%, #161616 62%, #000000 100%);
   box-shadow:
-    inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.35),
-    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.9);
+    inset -1.5px -1.5px 3px rgba(255, 255, 255, 0.15),
+    inset 1.5px 1.5px 2px rgba(0, 0, 0, 0.9);
 }
 
 .dot:hover .dot-hollow {
-  border-color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.9);
 }
 
 /* Extra glow on the active dot specifically while scrub-dragging, so it's obvious

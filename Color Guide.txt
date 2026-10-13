@@ -1,0 +1,17 @@
+/*Slide BG*/
+.slide-bg-1 { background: #fce08b; }
+.slide-bg-2 { background: #fdf6ef; }
+.slide-bg-3 { background: #e12020; } /* currently used only by the footer */
+.slide-bg-4 { background: #401804; } /* color test*/
+
+/* Body Text Color*/
+:root {
+  --body-color-1: #401804;
+  --body-color-2: black;
+}
+
+/* Heading Text Color*/
+:root {
+  --heading-color-1: #e12020;
+  --heading-color-2: #fce08b;
+}

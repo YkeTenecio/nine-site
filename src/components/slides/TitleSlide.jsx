@@ -1,0 +1,34 @@
+import SlideReveal from '../SlideReveal.jsx';
+
+// The opening slide — a large h1 title plus a short subtitle line.
+// `headingAlign` (default 'left') / `bodyAlign` (default 'center') control where
+// each element's own box sits horizontally, and its text alignment.
+//
+// `contentState`/`direction`/`transitionDuration`/`reducedMotion` drive the
+// pop-in/pop-out animation via SlideReveal — see SlideReveal.jsx for the full
+// explanation of each.
+function TitleSlide({
+  heading,
+  subtext,
+  headingAlign = 'left',
+  bodyAlign = 'center',
+  contentState,
+  direction,
+  transitionDuration = 0.7,
+  reducedMotion = false,
+}) {
+  const revealProps = { state: contentState, direction, duration: transitionDuration, reducedMotion };
+
+  return (
+    <>
+      <SlideReveal as="h1" order={0} {...revealProps} className={`heading-align-${headingAlign}`}>
+        {heading}
+      </SlideReveal>
+      <SlideReveal as="p" order={1} {...revealProps} className={`body-align-${bodyAlign}`}>
+        {subtext}
+      </SlideReveal>
+    </>
+  );
+}
+
+export default TitleSlide;

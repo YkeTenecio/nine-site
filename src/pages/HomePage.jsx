@@ -3,8 +3,29 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import Slide from '../components/Slide.jsx';
 import DotNav from '../components/DotNav.jsx';
 import NavHint from '../components/NavHint.jsx';
+import TitleSlide from '../components/slides/TitleSlide.jsx';
+import FooterSlide from '../components/slides/FooterSlide.jsx';
+import FeaturedSlide from '../components/slides/FeaturedSlide.jsx';
+import GallerySlide from '../components/slides/GallerySlide.jsx';
 
-// Each slide: key (unique), className (controls bg color), and content.
+// Each slide: key (unique), bg/headingColor/bodyColor/headingFont/bodyFont (which
+// palette slot it uses — see the matching `slide-bg-N` / `heading-color-N` /
+// `body-color-N` / `heading-font-N` / `body-font-N` classes in index.css), and
+// `type` + whichever of heading/subtext/text/itemCount/layout that type needs —
+// rendered via the matching component below. Four archetypes:
+//   - TitleSlide    (heading, subtext)
+//   - FooterSlide   (heading, text)
+//   - FeaturedSlide (heading, text, optional layout: 'center' | 'image-left' | 'image-right' | 'stack-plus-pair')
+//   - GallerySlide  (heading, text, itemCount)
+// This is the shape Part 2's Supabase data will map onto directly (heading/text/images
+// per row, plus a layout choice for Featured slides).
+//
+// All five palette fields (`bg`, `headingColor`, `bodyColor`, `headingFont`, `bodyFont`)
+// work identically: each is a plain number referencing a palette slot defined in
+// index.css. Assignment is fully manual per slide — any slide can use any slot, in
+// any pattern, independent of the other four. To restyle the site, edit the palette
+// values in index.css; to change which slide uses which slot, edit the number here.
+//
 // `short: true` makes a slide 70dvh instead of the full 100dvh, letting the adjacent
 // slide peek through the remaining 30%. `overlapPrev: true` (footer only) pulls the
 // snap position back by the overlap amount so the *previous* slide's tail stays visible
@@ -14,152 +35,166 @@ const OVERLAP_DVH = 30;
 const slides = [
   {
     key: 'title',
-    className: 'slide-title',
+    bg: 1,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
     short: true,
-    content: (
-      <>
-        <h1>[Portfolio Owner Name] — Placeholder Title</h1>
-        <p>Ad & Creative Design Portfolio</p>
-      </>
-    ),
+    type: 'title',
+    heading: '[Portfolio Owner Name] — Placeholder Title',
+    subtext: 'Ad & Creative Design Portfolio',
   },
   {
     key: 'selected-work',
-    className: 'slide-home',
-    content: (
-      <>
-        <h2>Selected Work</h2>
-        <div className="featured-image-placeholder skeleton" />
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 1,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'featured',
+    heading: 'Selected Work',
+    text: 'Supporting text placeholder.',
   },
   {
     key: 'product-transformation-1',
-    className: 'slide-product-transformation',
-    content: (
-      <>
-        <h2>01 — Product Transformation</h2>
-        <div className="featured-image-placeholder skeleton" />
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 2,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'featured',
+    heading: '01 — Product Transformation',
+    text: 'Supporting text placeholder.',
   },
   {
     key: 'product-transformation-2',
-    className: 'slide-product-transformation',
-    content: (
-      <>
-        <h2>01 — Product Transformation (cont.)</h2>
-        <div className="gallery-grid">
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-        </div>
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 2,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'gallery',
+    heading: '01 — Product Transformation (cont.)',
+    text: 'Supporting text placeholder.',
+    itemCount: 4,
   },
   {
     key: 'lifestyle-concepts-1',
-    className: 'slide-lifestyle-concepts',
-    content: (
-      <>
-        <h2>02 — Lifestyle Product Concepts</h2>
-        <div className="gallery-grid">
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-        </div>
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 1,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'gallery',
+    heading: '02 — Lifestyle Product Concepts',
+    text: 'Supporting text placeholder.',
+    itemCount: 4,
   },
   {
     key: 'lifestyle-concepts-2',
-    className: 'slide-lifestyle-concepts',
-    content: (
-      <>
-        <h2>02 — Lifestyle Product Concepts (cont.)</h2>
-        <div className="gallery-grid">
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-        </div>
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 1,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'gallery',
+    heading: '02 — Lifestyle Product Concepts (cont.)',
+    text: 'Supporting text placeholder.',
+    itemCount: 4,
   },
   {
     key: 'seasonal-campaigns-1',
-    className: 'slide-seasonal-campaigns',
-    content: (
-      <>
-        <h2>Concept: Seasonal Campaigns — Holiday Collection</h2>
-        <div className="gallery-grid">
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-        </div>
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 2,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'gallery',
+    heading: 'Concept: Seasonal Campaigns — Holiday Collection',
+    text: 'Supporting text placeholder.',
+    itemCount: 4,
   },
   {
     key: 'seasonal-campaigns-2',
-    className: 'slide-seasonal-campaigns',
-    content: (
-      <>
-        <h2>Concept: Seasonal Campaigns — Holiday Collection (cont.)</h2>
-        <div className="gallery-grid">
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-          <div className="gallery-item-placeholder skeleton" />
-        </div>
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 2,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'gallery',
+    heading: 'Concept: Seasonal Campaigns — Holiday Collection (cont.)',
+    text: 'Supporting text placeholder.',
+    itemCount: 4,
   },
   {
     key: 'gift-box-transformation',
-    className: 'slide-featured',
-    content: (
-      <>
-        <h2>Gift Box Transformation</h2>
-        <div className="featured-image-placeholder skeleton" />
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 1,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'featured',
+    heading: 'Gift Box Transformation',
+    text: 'Supporting text placeholder.',
   },
   {
     key: 'workflow',
-    className: 'slide-extra',
-    content: (
-      <>
-        <h2>Workflow</h2>
-        <div className="featured-image-placeholder skeleton" />
-        <p>Supporting text placeholder.</p>
-      </>
-    ),
+    bg: 2,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
+    type: 'featured',
+    heading: 'Workflow',
+    text: 'Supporting text placeholder.',
   },
   {
     key: 'footer',
-    className: 'slide-footer',
+    bg: 3,
+    headingColor: 1,
+    bodyColor: 1,
+    headingFont: 1,
+    bodyFont: 1,
     short: true,
     overlapPrev: true,
-    content: (
-      <>
-        <h2>Footer — Placeholder</h2>
-        <p>Contact / social links / closing note placeholder.</p>
-      </>
-    ),
+    type: 'footer',
+    heading: 'Footer — Placeholder',
+    text: 'Contact / social links / closing note placeholder.',
   },
 ];
+
+// Maps a slide's `type` to the component that renders it.
+const SLIDE_COMPONENTS = {
+  title: TitleSlide,
+  footer: FooterSlide,
+  featured: FeaturedSlide,
+  gallery: GallerySlide,
+};
+
+function renderSlideBody(slide, contentState, direction, transitionDuration, reducedMotion) {
+  const Component = SLIDE_COMPONENTS[slide.type];
+  if (!Component) return null;
+  return (
+    <Component
+      heading={slide.heading}
+      subtext={slide.subtext}
+      text={slide.text}
+      itemCount={slide.itemCount}
+      layout={slide.layout}
+      headingAlign={slide.headingAlign}
+      bodyAlign={slide.bodyAlign}
+      pairCount={slide.pairCount}
+      imageMaxWidth={slide.imageMaxWidth}
+      imageFlex={slide.imageFlex}
+      textFlex={slide.textFlex}
+      contentState={contentState}
+      direction={direction}
+      transitionDuration={transitionDuration}
+      reducedMotion={reducedMotion}
+    />
+  );
+}
 
 const TRANSITION_MS = 700;
 const NAV_HIDE_DELAY_MS = 1500;
@@ -197,6 +232,18 @@ function HomePage() {
   const touchOnNav = useRef(false); // true when the current touch sequence started on the dot-nav itself
   const navHideTimer = useRef(null);
   const [showHint, setShowHint] = useState(false);
+
+  // Tracks which way navigation last moved (1 = forward/down, -1 = backward/up, 0 =
+  // none yet). Computed by comparing the new index to the previous one, each render;
+  // the ref is updated AFTER render via effect so the comparison is always against
+  // the prior value, not the one that just landed. Used by SlideReveal (via each
+  // slide component) to make exiting content continue in the same direction the
+  // slide transition itself is moving.
+  const prevIndexRef = useRef(0);
+  const direction = index > prevIndexRef.current ? 1 : index < prevIndexRef.current ? -1 : 0;
+  useEffect(() => {
+    prevIndexRef.current = index;
+  }, [index]);
 
   useEffect(() => {
     indexRef.current = index;
@@ -243,8 +290,7 @@ function HomePage() {
   };
 
   // Mounted once — every handler below reads index/isScrubbing via refs instead of
-  // closure state, so the listeners never get torn down and re-attached mid-gesture
-  // (which was happening every single index change while scrubbing).
+  // closure state, so the listeners never get torn down and re-attached mid-gesture.
   useEffect(() => {
     const handleWheel = (e) => {
       e.preventDefault();
@@ -278,8 +324,7 @@ function HomePage() {
 
       // If the touch started on the dot-nav (or anything inside it), let DotNav's own
       // handlers (click, stopPropagation) own this touch entirely — don't treat it as a
-      // page gesture at all. This is what was swallowing dot taps before: the dots sit
-      // inside the edge-scrub zone, so a tap was being hijacked as a scrub.
+      // page gesture at all.
       if (e.target.closest && e.target.closest('.dot-nav')) {
         touchOnNav.current = true;
         return;
@@ -302,14 +347,12 @@ function HomePage() {
       if (touchOnNav.current) return;
 
       // Block the browser's own pull-to-refresh / rubber-band scroll for every touch
-      // on the page — we're handling all navigation ourselves, so no native scroll
-      // gesture should ever be allowed to take over mid-swipe.
+      // on the page — we're handling all navigation ourselves.
       e.preventDefault();
 
       if (!isScrubbingRef.current) return;
       const touch = e.touches[0];
-      // Scrollbar-style mapping: finger up -> earlier slide (lower index, "up" in the dot list),
-      // finger down -> later slide (higher index, "down" in the dot list).
+      // Scrollbar-style mapping: finger up -> earlier slide, finger down -> later slide.
       const delta = scrubStartY.current - touch.clientY; // positive when finger has moved up
       const slideDelta = Math.round(delta / PX_PER_SLIDE_SCRUB);
       const target = Math.max(0, Math.min(slides.length - 1, scrubStartIndex.current - slideDelta));
@@ -361,7 +404,6 @@ function HomePage() {
     try {
       hasSeen = window.localStorage.getItem(NAV_HINT_STORAGE_KEY) === 'true';
     } catch {
-      // localStorage can throw in some privacy modes — just skip the hint rather than crash.
       hasSeen = true;
     }
     if (hasSeen) return;
@@ -384,6 +426,20 @@ function HomePage() {
     goTo(i);
   };
 
+  const slideTransitionDuration =
+    (prefersReducedMotion ? 50 : isScrubbing ? SCRUB_TRANSITION_MS : TRANSITION_MS) / 1000;
+
+  // A slide is 'peeking' when it isn't active but is the neighbor partially visible
+  // through Title's or Footer's 30% overlap — see SlideReveal.jsx for why that gets
+  // a dim/blur treatment instead of the normal full fade-out.
+  function getContentState(i) {
+    if (i === index) return 'active';
+    const isPeekingNeighborOfTitle = index === 0 && i === 1;
+    const isPeekingNeighborOfFooter = index === slides.length - 1 && i === slides.length - 2;
+    if (isPeekingNeighborOfTitle || isPeekingNeighborOfFooter) return 'peeking';
+    return 'exited';
+  }
+
   return (
     <div className="slide-viewport">
       <motion.div
@@ -394,14 +450,17 @@ function HomePage() {
           ease: [0.65, 0, 0.35, 1],
         }}
       >
-        {slides.map((slide) => (
-          <Slide
-            key={slide.key}
-            className={`${slide.className}${slide.short ? ' slide-short' : ''}`}
-          >
-            {slide.content}
-          </Slide>
-        ))}
+        {slides.map((slide, i) => {
+          const contentState = getContentState(i);
+          return (
+            <Slide
+              key={slide.key}
+              className={`slide-bg-${slide.bg} heading-color-${slide.headingColor} body-color-${slide.bodyColor} heading-font-${slide.headingFont} body-font-${slide.bodyFont}${slide.short ? ' slide-short' : ''}`}
+            >
+              {renderSlideBody(slide, contentState, direction, slideTransitionDuration, prefersReducedMotion)}
+            </Slide>
+          );
+        })}
       </motion.div>
 
       <div
@@ -418,7 +477,7 @@ function HomePage() {
         onMouseEnter={holdNavOpen}
         onMouseLeave={scheduleNavHide}
         scrubbing={isScrubbing}
-        transitionDuration={prefersReducedMotion ? 0.05 : (isScrubbing ? SCRUB_TRANSITION_MS : TRANSITION_MS) / 1000}
+        transitionDuration={slideTransitionDuration}
         reducedMotion={prefersReducedMotion}
       />
 
