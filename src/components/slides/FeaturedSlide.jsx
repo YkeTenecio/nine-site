@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import SlideReveal from '../SlideReveal.jsx';
 
 // One large image + heading + supporting text. Used for any slide showcasing a
@@ -21,7 +22,7 @@ import SlideReveal from '../SlideReveal.jsx';
 // `headingAlign` / `bodyAlign` ('left' | 'center' | 'right') control where each
 // element's own box sits horizontally and its text alignment.
 //
-// `contentState`/`direction`/`transitionDuration`/`reducedMotion` drive the
+// `contentState`/`side`/`transitionDuration`/`reducedMotion` drive the
 // pop-in/pop-out animation via SlideReveal on every heading/text/image — images
 // are marked `noExit` throughout, per the brief ("images just stay as is").
 function FeaturedSlide({
@@ -35,11 +36,11 @@ function FeaturedSlide({
   imageFlex = 1,
   textFlex = 1,
   contentState,
-  direction,
+  side,
   transitionDuration = 0.7,
   reducedMotion = false,
 }) {
-  const revealProps = { state: contentState, direction, duration: transitionDuration, reducedMotion };
+  const revealProps = { state: contentState, side, duration: transitionDuration, reducedMotion };
 
   if (layout === 'image-left' || layout === 'image-right') {
     return (
@@ -107,7 +108,7 @@ function FeaturedSlide({
 
   return (
     <>
-      <SlideReveal as="h2" order={0} {...revealProps}>
+      <SlideReveal as="h2" order={0} {...revealProps} className={`heading-align-${headingAlign}`}>
         {heading}
       </SlideReveal>
       <SlideReveal
@@ -125,4 +126,4 @@ function FeaturedSlide({
   );
 }
 
-export default FeaturedSlide;
+export default memo(FeaturedSlide);

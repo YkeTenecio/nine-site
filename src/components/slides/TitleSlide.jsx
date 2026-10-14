@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import SlideReveal from '../SlideReveal.jsx';
 
 // The opening slide — a large h1 title plus a short subtitle line.
 // `headingAlign` (default 'left') / `bodyAlign` (default 'center') control where
 // each element's own box sits horizontally, and its text alignment.
 //
-// `contentState`/`direction`/`transitionDuration`/`reducedMotion` drive the
+// `contentState`/`side`/`transitionDuration`/`reducedMotion` drive the
 // pop-in/pop-out animation via SlideReveal — see SlideReveal.jsx for the full
 // explanation of each.
 function TitleSlide({
@@ -13,11 +14,11 @@ function TitleSlide({
   headingAlign = 'left',
   bodyAlign = 'center',
   contentState,
-  direction,
+  side,
   transitionDuration = 0.7,
   reducedMotion = false,
 }) {
-  const revealProps = { state: contentState, direction, duration: transitionDuration, reducedMotion };
+  const revealProps = { state: contentState, side, duration: transitionDuration, reducedMotion };
 
   return (
     <>
@@ -31,4 +32,4 @@ function TitleSlide({
   );
 }
 
-export default TitleSlide;
+export default memo(TitleSlide);

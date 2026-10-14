@@ -42,8 +42,8 @@ const slides = [
     bodyFont: 1,
     short: true,
     type: 'title',
-    heading: 'Placeholder Title',
-    subtext: 'Portfolio [Placeholder]',
+    heading: '[Portfolio Owner Name] — Placeholder Title',
+    subtext: 'Ad & Creative Design Portfolio',
   },
   {
     key: 'Slide 2',
@@ -54,7 +54,6 @@ const slides = [
     bodyFont: 1,
     type: 'featured',
     heading: 'Selected Work',
-    headingAlign: 'left',
     text: 'Supporting text placeholder.',
   },
   {
@@ -64,8 +63,8 @@ const slides = [
     bodyColor: 1,
     headingFont: 1,
     bodyFont: 1,
-    type: 'gallery',
-    heading: 'Selected Work 1',
+    type: 'featured',
+    heading: '01 — Product Transformation',
     text: 'Supporting text placeholder.',
   },
   {
@@ -76,7 +75,7 @@ const slides = [
     headingFont: 1,
     bodyFont: 1,
     type: 'gallery',
-    heading: 'Selected Work 1 (cont.)',
+    heading: '01 — Product Transformation (cont.)',
     text: 'Supporting text placeholder.',
     itemCount: 4,
   },
@@ -88,7 +87,7 @@ const slides = [
     headingFont: 1,
     bodyFont: 1,
     type: 'gallery',
-    heading: 'Selected Work 2',
+    heading: '02 — Lifestyle Product Concepts',
     text: 'Supporting text placeholder.',
     itemCount: 4,
   },
@@ -100,7 +99,7 @@ const slides = [
     headingFont: 1,
     bodyFont: 1,
     type: 'gallery',
-    heading: 'Selected Work 2(cont.)',
+    heading: '02 — Lifestyle Product Concepts (cont.)',
     text: 'Supporting text placeholder.',
     itemCount: 4,
   },
@@ -112,7 +111,7 @@ const slides = [
     headingFont: 1,
     bodyFont: 1,
     type: 'gallery',
-    heading: 'Concept work',
+    heading: 'Concept: Seasonal Campaigns — Holiday Collection',
     text: 'Supporting text placeholder.',
     itemCount: 4,
   },
@@ -124,7 +123,7 @@ const slides = [
     headingFont: 1,
     bodyFont: 1,
     type: 'gallery',
-    heading: 'Concept work (cont.)',
+    heading: 'Concept: Seasonal Campaigns — Holiday Collection (cont.)',
     text: 'Supporting text placeholder.',
     itemCount: 4,
   },
@@ -136,7 +135,7 @@ const slides = [
     headingFont: 1,
     bodyFont: 1,
     type: 'featured',
-    heading: 'Concept work 2',
+    heading: 'Gift Box Transformation',
     text: 'Supporting text placeholder.',
   },
   {
@@ -173,7 +172,7 @@ const SLIDE_COMPONENTS = {
   gallery: GallerySlide,
 };
 
-function renderSlideBody(slide, contentState, direction, transitionDuration, reducedMotion) {
+function renderSlideBody(slide, contentState, side, transitionDuration, reducedMotion) {
   const Component = SLIDE_COMPONENTS[slide.type];
   if (!Component) return null;
   return (
@@ -190,7 +189,7 @@ function renderSlideBody(slide, contentState, direction, transitionDuration, red
       imageFlex={slide.imageFlex}
       textFlex={slide.textFlex}
       contentState={contentState}
-      direction={direction}
+      side={side}
       transitionDuration={transitionDuration}
       reducedMotion={reducedMotion}
     />
@@ -233,18 +232,6 @@ function HomePage() {
   const touchOnNav = useRef(false); // true when the current touch sequence started on the dot-nav itself
   const navHideTimer = useRef(null);
   const [showHint, setShowHint] = useState(false);
-
-  // Tracks which way navigation last moved (1 = forward/down, -1 = backward/up, 0 =
-  // none yet). Computed by comparing the new index to the previous one, each render;
-  // the ref is updated AFTER render via effect so the comparison is always against
-  // the prior value, not the one that just landed. Used by SlideReveal (via each
-  // slide component) to make exiting content continue in the same direction the
-  // slide transition itself is moving.
-  const prevIndexRef = useRef(0);
-  const direction = index > prevIndexRef.current ? 1 : index < prevIndexRef.current ? -1 : 0;
-  useEffect(() => {
-    prevIndexRef.current = index;
-  }, [index]);
 
   useEffect(() => {
     indexRef.current = index;
@@ -432,7 +419,7 @@ function HomePage() {
 
   // A slide is 'peeking' when it isn't active but is the neighbor partially visible
   // through Title's or Footer's 30% overlap — see SlideReveal.jsx for why that gets
-  // a dim/blur treatment instead of the normal full fade-out.
+  // a dimmed treatment instead of the normal full fade-out.
   function getContentState(i) {
     if (i === index) return 'active';
     const isPeekingNeighborOfTitle = index === 0 && i === 1;
@@ -453,12 +440,18 @@ function HomePage() {
       >
         {slides.map((slide, i) => {
           const contentState = getContentState(i);
+          // Where this slide sits relative to the active one: -1 above, +1 below, 0 = active.
+          // SlideReveal uses this so content always enters from / exits toward the right side.
+          const side = Math.sign(i - index);
+          // 'slide-live' marks slides someone can actually see (active, or peeking through
+          // Title/Footer) — index.css pauses the skeleton shimmer on every other slide.
+          const liveClass = contentState === 'exited' ? '' : ' slide-live';
           return (
             <Slide
               key={slide.key}
-              className={`slide-bg-${slide.bg} heading-color-${slide.headingColor} body-color-${slide.bodyColor} heading-font-${slide.headingFont} body-font-${slide.bodyFont}${slide.short ? ' slide-short' : ''}`}
+              className={`slide-bg-${slide.bg} heading-color-${slide.headingColor} body-color-${slide.bodyColor} heading-font-${slide.headingFont} body-font-${slide.bodyFont}${slide.short ? ' slide-short' : ''}${liveClass}`}
             >
-              {renderSlideBody(slide, contentState, direction, slideTransitionDuration, prefersReducedMotion)}
+              {renderSlideBody(slide, contentState, side, slideTransitionDuration, prefersReducedMotion)}
             </Slide>
           );
         })}

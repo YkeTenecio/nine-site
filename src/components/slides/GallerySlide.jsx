@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import SlideReveal from '../SlideReveal.jsx';
 
 // A grid of images + heading + supporting text. `itemCount` controls how many
@@ -16,11 +17,11 @@ function GallerySlide({
   headingAlign = 'left',
   bodyAlign = 'center',
   contentState,
-  direction,
+  side,
   transitionDuration = 0.7,
   reducedMotion = false,
 }) {
-  const revealProps = { state: contentState, direction, duration: transitionDuration, reducedMotion };
+  const revealProps = { state: contentState, side, duration: transitionDuration, reducedMotion };
 
   return (
     <>
@@ -39,4 +40,4 @@ function GallerySlide({
   );
 }
 
-export default GallerySlide;
+export default memo(GallerySlide);
