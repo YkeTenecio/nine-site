@@ -5,9 +5,9 @@ import SlideReveal from '../SlideReveal.jsx';
 // `headingAlign` (default 'left') / `bodyAlign` (default 'center') control where
 // each element's own box sits horizontally, and its text alignment.
 //
-// `contentState`/`side`/`transitionDuration`/`reducedMotion` drive the
-// pop-in/pop-out animation via SlideReveal — see SlideReveal.jsx for the full
-// explanation of each.
+// `contentState`/`side`/`transitionDuration`/`reducedMotion` drive the entrance/exit
+// animation via SlideReveal: headings slide sideways, body text and images slide
+// vertically (see SlideReveal.jsx for the full behavior).
 function TitleSlide({
   heading,
   subtext,
@@ -22,10 +22,10 @@ function TitleSlide({
 
   return (
     <>
-      <SlideReveal as="h1" order={0} {...revealProps} className={`heading-align-${headingAlign}`}>
+      <SlideReveal as="h1" variant="heading" order={0} {...revealProps} className={`heading-align-${headingAlign}`}>
         {heading}
       </SlideReveal>
-      <SlideReveal as="p" order={1} {...revealProps} className={`body-align-${bodyAlign}`}>
+      <SlideReveal as="p" variant="body" order={1} {...revealProps} className={`body-align-${bodyAlign}`}>
         {subtext}
       </SlideReveal>
     </>

@@ -18,10 +18,10 @@ function FooterSlide({
 
   return (
     <>
-      <SlideReveal as="h2" order={0} {...revealProps} className={`heading-align-${headingAlign}`}>
+      <SlideReveal as="h2" variant="heading" order={0} {...revealProps} className={`heading-align-${headingAlign}`}>
         {heading}
       </SlideReveal>
-      <SlideReveal as="p" order={1} {...revealProps} className={`body-align-${bodyAlign}`}>
+      <SlideReveal as="p" variant="body" order={1} {...revealProps} className={`body-align-${bodyAlign}`}>
         {text}
       </SlideReveal>
     </>

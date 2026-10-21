@@ -8,8 +8,8 @@ import SlideReveal from '../SlideReveal.jsx';
 // `headingAlign` (default 'left') / `bodyAlign` (default 'center') control where
 // each element's own box sits horizontally, and its text alignment.
 //
-// The whole grid is wrapped as a single `noExit` SlideReveal block — per the
-// brief, images don't animate out, they just stay as-is.
+// The whole grid is wrapped as a single 'image' SlideReveal block, so it slides
+// in/out as one piece.
 function GallerySlide({
   heading,
   text,
@@ -25,15 +25,15 @@ function GallerySlide({
 
   return (
     <>
-      <SlideReveal as="h2" order={0} {...revealProps} className={`heading-align-${headingAlign}`}>
+      <SlideReveal as="h2" variant="heading" order={0} {...revealProps} className={`heading-align-${headingAlign}`}>
         {heading}
       </SlideReveal>
-      <SlideReveal as="div" order={2} noExit {...revealProps} className="gallery-grid">
+      <SlideReveal as="div" variant="image" order={2} {...revealProps} className="gallery-grid">
         {Array.from({ length: itemCount }, (_, i) => (
           <div key={i} className="gallery-item-placeholder skeleton" />
         ))}
       </SlideReveal>
-      <SlideReveal as="p" order={1} {...revealProps} className={`body-align-${bodyAlign}`}>
+      <SlideReveal as="p" variant="body" order={1} {...revealProps} className={`body-align-${bodyAlign}`}>
         {text}
       </SlideReveal>
     </>
